@@ -30,15 +30,8 @@ jobs:
     - name: Build APK Directly with Gradle
       run: |
         cat << 'EOF' > settings.gradle
-        pluginManagement {
-            repositories {
-                google()
-                mavenCentral()
-                gradlePluginPortal()
-            }
-        }
         dependencyResolutionManagement {
-            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
             repositories {
                 google()
                 mavenCentral()
@@ -50,7 +43,7 @@ jobs:
 
         cat << 'EOF' > app/build.gradle
         plugins {
-            id 'com.android.application' version '8.1.1'
+            id 'com.android.application' version '7.4.2'
         }
 
         android {
@@ -111,8 +104,8 @@ jobs:
         EOF
 
         yes | sdkmanager --licenses || true
-        gradle wrapper
-        ./gradlew assembleDebug
+        gradle wrapper --gradle-version 7.5
+        ./gradlew assembleDebug --warning-mode all
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
