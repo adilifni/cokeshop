@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طلببيات كوكا كولا - البقالة</title>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            color: #d9534f;
+        }
+        .page {
+            display: none;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+            font-size: 14px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .back-btn {
+            background-color: #6c757d;
+            margin-top: 10px;
+        }
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+        .summary-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الصفحة الأولى: قائمة المنتجات -->
+    <div id="page1" class="page active">
+        <h2>طلبية المشروبات الأسبوعية</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>المنتج (Designation)</th>
+                    <th>الكمية</th>
+                </tr>
+            </thead>
+            <tbody id="products-list">
+                <!-- يتم تعبئة المنتجات ديناميكياً عبر الجافاسكريبت -->
+            </tbody>
+        </table>
+        <button onclick="generateSummary()">موافق (عرض الطلبية)</button>
+    </div>
+
+    <!-- الصفحة الثانية: ملخص الطلبية -->
+    <div id="page2" class="page">
+        <h2>ملخص الطلبية للإرسال</h2>
+        <div class="summary-header">سلام، هذه طلبية الأسبوع:</div>
+        <table id="summary-table">
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>الكمية المطلوبة</th>
+                </tr>
+            </thead>
+            <tbody id="summary-list">
+                <!-- المنتجات المختارة فقط -->
+            </tbody>
+        </table>
+        <button class="back-btn" onclick="goBack()">تعديل الطلبية</button>
+    </div>
+
+    <script>
+        // قائمة المنتجات المستخرجة من الفواتير
+        const products = [
+            { id: 433, name: "CAPPY PULPY OR 25CL" },
+            { id: 943, name: "COCA COLA PET 25cl*12" },
+            { id: 941, name: "SPRITE PET 25CL*12" },
+            { id: 217, name: "HAWAI TROP PET 25CL*12" },
+            { id: 446, name: "COCA COLA PET 0.45L" },
+            { id: 452, name: "SPRITE PET 0.45L" },
+            { id: 448, name: "HAWAI TROP PET 0.45L" },
+            { id: 451, name: "SCHW TONIC PET 0.45L" },
+            { id: 358, name: "COCA COLA PET 1L *8" },
+            { id: 723, name: "FANTA ORANGE PET 1L *8" },
+            { id: 726, name: "SPRITE PET 1L*8" },
+            { id: 724, name: "HAWAI TROP. PET 1L *8" },
+            { id: 77,  name: "CIEL 1.5L (SP)" },
+            { id: 370, name: "COCA BOITE 25 *12" },
+            { id: 377, name: "HAWAI TROP BOITE 25*12" },
+            { id: 449, name: "POMS PET 0.45L" }
+        ];
+
+        // تعبئة الصفحة الأولى بالمنتجات
+        const productListEl = document.getElementById('products-list');
+        products.forEach(p => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${p.name}</td>
+                <td><input type="number" min="0" value="0" data-id="${p.id}" data-name="${p.name}"></td>
+            `;
+            productListEl.appendChild(row);
+        });
+
+        // الانتقال لصفحة الملخص
+        function generateSummary() {
+            const inputs = document.querySelectorAll('#products-list input');
+            const summaryListEl = document.getElementById('summary-list');
+            summaryListEl.innerHTML = '';
+            
+            let hasItems = false;
+
+            inputs.forEach(input => {
+                const qty = parseInt(input.value);
+                if (qty > 0) {
+                    hasItems = true;
+                    const name = input.getAttribute('data-name');
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${name}</td><td style="text-align: center; font-weight: bold;">${qty}</td>`;
+                    summaryListEl.appendChild(row);
+                }
+            });
+
+            if (!hasItems) {
+                alert("الرجاء إدخال كمية لمنتج واحد على الأقل.");
+                return;
+            }
+
+            document.getElementById('page1').classList.remove('active');
+            document.getElementById('page2').classList.add('active');
+        }
+
+        // العودة لتعديل الطلبية
+        function goBack() {
+            document.getElementById('page2').classList.remove('active');
+            document.getElementById('page1').classList.add('active');
+        }
+    </script>
+</body>
+</html>
