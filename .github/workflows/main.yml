@@ -28,18 +28,10 @@ jobs:
 
     - name: Create Clean Cordova Project and Copy Files
       run: |
-        # إنشاء مشروع مؤقت باسم temp_project
         cordova create temp_project com.example.cokeshop cokeshop
-        
-        # نقل ملفات مشروعك الحالية (مثل www أو ملفاتك) إلى داخل مجلد www الخاص بكوردوفا
-        # أو نسخ ملفاتك إلى المشروع الجديد
         rsync -av --exclude='temp_project' --exclude='.github' ./ temp_project/www/
-        
-        # الانتقال إلى مجلد المشروع الجديد
         cd temp_project
-        
-        # إضافة منصة الأندرويد والبناء
-        cordova platform add android@12.0.0
+        cordova platform add android@11.0.0
         cordova build android --debug
 
     - name: Upload APK Artifact
