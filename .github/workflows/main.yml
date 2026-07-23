@@ -48,6 +48,10 @@ jobs:
         include ':app'
         EOF
 
+        cat << 'EOF' > build.gradle
+        // ملف جذري فارغ لتفادي أي أخطاء توافق
+        EOF
+
         cat << 'EOF' > app/build.gradle
         plugins {
             id 'com.android.application' version '7.4.2'
@@ -113,11 +117,10 @@ jobs:
 
         yes | sdkmanager --licenses || true
         
-        # استخدام أداة توريد نسخة Gradle ثابتة وتوليد الملفات التشغيلية محلياً
-        mvn_gradle_version="7.5.1"
-        wget -q https://services.gradle.org/distributions/gradle-${mvn_gradle_version}-bin.zip
-        unzip -q gradle-${mvn_gradle_version}-bin.zip
-        export PATH=$PWD/gradle-${mvn_gradle_version}/bin:$PATH
+        # تحميل وتشغيل Gradle 7.5 حصرياً وبشكل مستقل
+        wget -q https://services.gradle.org/distributions/gradle-7.5-bin.zip
+        unzip -q gradle-7.5-bin.zip
+        export PATH=$PWD/gradle-7.5/bin:$PATH
         
         gradle assembleDebug
 
