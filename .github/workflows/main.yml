@@ -48,10 +48,6 @@ jobs:
         include ':app'
         EOF
 
-        cat << 'EOF' > build.gradle
-        // ملف جذري فارغ لتفادي أي أخطاء توافق
-        EOF
-
         cat << 'EOF' > app/build.gradle
         plugins {
             id 'com.android.application' version '7.4.2'
@@ -68,10 +64,6 @@ jobs:
                 versionName "1.0"
             }
         }
-
-        dependencies {
-            implementation 'androidx.appcompat:appcompat:1.6.1'
-        }
         EOF
         
         mkdir -p app/src/main
@@ -81,8 +73,7 @@ jobs:
             <uses-permission android:name="android.permission.INTERNET" />
             <application
                 android:allowBackup="true"
-                android:label="Cokeshop"
-                android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+                android:label="Cokeshop">
                 <activity
                     android:name=".MainActivity"
                     android:exported="true">
@@ -98,12 +89,12 @@ jobs:
         mkdir -p app/src/main/java/com/example/cokeshop
         cat << 'EOF' > app/src/main/java/com/example/cokeshop/MainActivity.kt
         package com.example.cokeshop
+        import android.app.Activity
         import android.os.Bundle
         import android.webkit.WebView
         import android.webkit.WebViewClient
-        import androidx.appcompat.app.AppCompatActivity
 
-        class MainActivity : AppCompatActivity() {
+        class MainActivity : Activity() {
             override fun onCreate(savedInstanceState: Bundle?) {
                 super.onCreate(savedInstanceState)
                 val webView = WebView(this)
@@ -117,7 +108,6 @@ jobs:
 
         yes | sdkmanager --licenses || true
         
-        # تحميل وتشغيل Gradle 7.5 حصرياً وبشكل مستقل
         wget -q https://services.gradle.org/distributions/gradle-7.5-bin.zip
         unzip -q gradle-7.5-bin.zip
         export PATH=$PWD/gradle-7.5/bin:$PATH
