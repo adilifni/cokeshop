@@ -26,14 +26,24 @@ jobs:
     - name: Install Cordova globally
       run: npm install -g cordova
 
-    - name: Install Android platform
-      run: cordova platform add android@12.0.0
-
-    - name: Build Debug APK
-      run: cordova build android --debug
+    - name: Create Clean Cordova Project and Copy Files
+      run: |
+        # إنشاء مشروع مؤقت باسم temp_project
+        cordova create temp_project com.example.cokeshop cokeshop
+        
+        # نقل ملفات مشروعك الحالية (مثل www أو ملفاتك) إلى داخل مجلد www الخاص بكوردوفا
+        # أو نسخ ملفاتك إلى المشروع الجديد
+        rsync -av --exclude='temp_project' --exclude='.github' ./ temp_project/www/
+        
+        # الانتقال إلى مجلد المشروع الجديد
+        cd temp_project
+        
+        # إضافة منصة الأندرويد والبناء
+        cordova platform add android@12.0.0
+        cordova build android --debug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-debug-apk
-        path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+        path: temp_project/platforms/android/app/build/outputs/apk/debug/app-debug.apk
