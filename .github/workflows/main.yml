@@ -24,19 +24,36 @@ jobs:
     - name: Build Web App / Package Files
       run: |
         mkdir -p app/src/main/assets/www
-        # نسخ ملفات مشروعك مباشرة إلى مجلد الأصول
         cp -r * app/src/main/assets/www/ 2>/dev/null || true
         rm -rf app/src/main/assets/www/.github app/src/main/assets/www/app
 
     - name: Build APK Directly with Gradle
       run: |
-        # إنشاء هيكل مشروع أندرويد مصغر وخفيف للبناء الفوري
-        echo "include ':app'" > settings.gradle
+        cat << 'EOF' > settings.gradle
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+        dependencyResolutionManagement {
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        rootProject.name = "Cokeshop"
+        include ':app'
+        EOF
+
         cat << 'EOF' > app/build.gradle
         plugins {
             id 'com.android.application'
         }
         android {
+            namespace 'com.example.cokeshop'
             compileSdk 33
             defaultConfig {
                 applicationId "com.example.cokeshop"
@@ -48,7 +65,6 @@ jobs:
         }
         EOF
         
-        # إنشاء ملف AndroidManifest أساسي لتشغيل التطبيق
         mkdir -p app/src/main
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -73,7 +89,6 @@ jobs:
         </manifest>
         EOF
 
-        # إنشاء نشاط جافا لتشغيل ملفات الـ Web داخل التطبيق
         mkdir -p app/src/main/java/com/example/cokeshop
         cat << 'EOF' > app/src/main/java/com/example/cokeshop/MainActivity.kt
         package com.example.cokeshop
@@ -94,9 +109,7 @@ jobs:
         }
         EOF
 
-        # ضبط رخصة الأندرويد ومنح صلاحيات التنفيذ لبناء الـ APK
         yes | sdkmanager --licenses || true
-        chmod +x gradlew || true
         gradle wrapper
         ./gradlew assembleDebug
 
