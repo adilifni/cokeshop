@@ -18,24 +18,90 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
 
-    - name: Install Cordova globally
-      run: npm install -g cordova
-
-    - name: Create Clean Cordova Project and Copy Files
+    - name: Build Web App / Package Files
       run: |
-        cordova create temp_project com.example.cokeshop cokeshop
-        rsync -av --exclude='temp_project' --exclude='.github' ./ temp_project/www/
-        cd temp_project
-        cordova platform add android@12.0.0 --nofetch
-        cordova build android --debug --no-telemetry
+        mkdir -p app/src/main/assets/www
+        # نسخ ملفات مشروعك مباشرة إلى مجلد الأصول
+        cp -r * app/src/main/assets/www/ 2>/dev/null || true
+        rm -rf app/src/main/assets/www/.github app/src/main/assets/www/app
+
+    - name: Build APK Directly with Gradle
+      run: |
+        # إنشاء هيكل مشروع أندرويد مصغر وخفيف للبناء الفوري
+        echo "include ':app'" > settings.gradle
+        cat << 'EOF' > app/build.gradle
+        plugins {
+            id 'com.android.application'
+        }
+        android {
+            compileSdk 33
+            defaultConfig {
+                applicationId "com.example.cokeshop"
+                minSdk 21
+                targetSdk 33
+                versionCode 1
+                versionName "1.0"
+            }
+        }
+        EOF
+        
+        # إنشاء ملف AndroidManifest أساسي لتشغيل التطبيق
+        mkdir -p app/src/main
+        cat << 'EOF' > app/src/main/AndroidManifest.xml
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            package="com.example.cokeshop">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <application
+                android:allowBackup="true"
+                android:icon="@mipmap/ic_launcher"
+                android:label="Cokeshop"
+                android:roundIcon="@mipmap/ic_launcher"
+                android:supportsRtl="true"
+                android:theme="@style/Theme.AppCompat.NoActionBar">
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
+
+        # إنشاء نشاط جافا لتشغيل ملفات الـ Web داخل التطبيق
+        mkdir -p app/src/main/java/com/example/cokeshop
+        cat << 'EOF' > app/src/main/java/com/example/cokeshop/MainActivity.kt
+        package com.example.cokeshop
+        import android.os.Bundle
+        import android.webkit.WebView
+        import android.webkit.WebViewClient
+        import androidx.appcompat.app.AppCompatActivity
+
+        class MainActivity : AppCompatActivity() {
+            override fun onCreate(savedInstanceState: Bundle?) {
+                super.onCreate(savedInstanceState)
+                val webView = WebView(this)
+                webView.settings.javaScriptEnabled = true
+                webView.webViewClient = WebViewClient()
+                webView.loadUrl("file:///android_asset/www/index.html")
+                setContentView(webView)
+            }
+        }
+        EOF
+
+        # ضبط رخصة الأندرويد ومنح صلاحيات التنفيذ لبناء الـ APK
+        yes | sdkmanager --licenses || true
+        chmod +x gradlew || true
+        gradle wrapper
+        ./gradlew assembleDebug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-debug-apk
-        path: temp_project/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+        path: app/build/outputs/apk/debug/app-debug.apk
