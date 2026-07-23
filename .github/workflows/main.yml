@@ -31,8 +31,8 @@ jobs:
         cordova create temp_project com.example.cokeshop cokeshop
         rsync -av --exclude='temp_project' --exclude='.github' ./ temp_project/www/
         cd temp_project
-        cordova platform add android@11.0.0
-        cordova build android --debug
+        cordova platform add android@12.0.0 --nofetch
+        cordova build android --debug --no-telemetry
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
