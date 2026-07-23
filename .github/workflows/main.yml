@@ -30,15 +30,8 @@ jobs:
     - name: Build APK Directly with Gradle
       run: |
         cat << 'EOF' > settings.gradle
-        pluginManagement {
-            repositories {
-                google()
-                mavenCentral()
-                gradlePluginPortal()
-            }
-        }
         dependencyResolutionManagement {
-            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
             repositories {
                 google()
                 mavenCentral()
@@ -112,7 +105,7 @@ jobs:
         EOF
 
         yes | sdkmanager --licenses || true
-        gradle wrapper
+        gradle wrapper --gradle-version 7.5
         ./gradlew assembleDebug
 
     - name: Upload APK Artifact
