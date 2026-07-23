@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>طلببيات كوكا كولا - البقالة</title>
+    <title>طلبيات كوكا كولا - البقالة</title>
     <style>
         body {
             font-family: Tahoma, sans-serif;
@@ -133,15 +133,17 @@
             { id: 449, name: "POMS PET 0.45L" }
         ];
 
-        // تعبئة الصفحة الأولى بالمنتجات
-        const productListEl = document.getElementById('products-list');
-        products.forEach(p => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${p.name}</td>
-                <td><input type="number" min="0" value="0" data-id="${p.id}" data-name="${p.name}"></td>
-            `;
-            productListEl.appendChild(row);
+        // تعبئة الصفحة الأولى بالمنتجات عند تحميل المستند
+        document.addEventListener("DOMContentLoaded", function() {
+            const productListEl = document.getElementById('products-list');
+            products.forEach(p => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${p.name}</td>
+                    <td><input type="number" min="0" value="0" data-id="${p.id}" data-name="${p.name}"></td>
+                `;
+                productListEl.appendChild(row);
+            });
         });
 
         // الانتقال لصفحة الملخص
