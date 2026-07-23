@@ -26,6 +26,12 @@ jobs:
     - name: Install Cordova globally
       run: npm install -g cordova
 
+    - name: Prepare Cordova Project Structure
+      run: |
+        if [ ! -f "config.xml" ]; then
+          cordova create . com.example.cokeshop cokeshop
+        fi
+
     - name: Install Android platform
       run: cordova platform add android@12.0.0
 
