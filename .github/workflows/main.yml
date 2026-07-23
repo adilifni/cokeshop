@@ -30,30 +30,28 @@ jobs:
     - name: Generate Project Files & Build APK
       run: |
         cat << 'EOF' > settings.gradle
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+        dependencyResolutionManagement {
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
         rootProject.name = "Cokeshop"
         include ':app'
         EOF
 
-        cat << 'EOF' > build.gradle
-        buildscript {
-            repositories {
-                google()
-                mavenCentral()
-            }
-            dependencies {
-                classpath 'com.android.tools.build:gradle:7.4.2'
-            }
-        }
-        allprojects {
-            repositories {
-                google()
-                mavenCentral()
-            }
-        }
-        EOF
-
         cat << 'EOF' > app/build.gradle
-        apply plugin: 'com.android.application'
+        plugins {
+            id 'com.android.application'
+        }
 
         android {
             namespace 'com.example.cokeshop'
@@ -114,7 +112,7 @@ jobs:
         EOF
 
         yes | sdkmanager --licenses || true
-        gradle wrapper --gradle-version 7.5
+        gradle wrapper --gradle-version 8.0
         ./gradlew assembleDebug
 
     - name: Upload APK Artifact
