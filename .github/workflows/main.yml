@@ -73,6 +73,7 @@ jobs:
             <uses-permission android:name="android.permission.INTERNET" />
             <application
                 android:allowBackup="true"
+                android:usesCleartextTraffic="true"
                 android:label="Cokeshop">
                 <activity
                     android:name=".MainActivity"
@@ -95,12 +96,36 @@ jobs:
         import android.webkit.WebViewClient
 
         class MainActivity : Activity() {
+            override minSdk 21 // syntax correction via proper layout below
             override fun onCreate(savedInstanceState: Bundle?) {
                 super.onCreate(savedInstanceState)
                 val webView = WebView(this)
                 webView.settings.javaScriptEnabled = true
+                webView.settings.domStorageEnabled = true
                 webView.webViewClient = WebViewClient()
                 webView.loadUrl("file:///android_asset/www/index.html")
+                setContentView(webView)
+            }
+        }
+        EOF
+
+        # تصحيح كود MainActivity.kt بشكل نظيف
+        cat << 'EOF' > app/src/main/java/com/example/cokeshop/MainActivity.kt
+        package com.example.cokeshop
+        import android.app.Activity
+        import android.os.Bundle
+        import android.webkit.WebView
+        import android.webkit.WebViewClient
+
+        class MainActivity : Activity() {
+            override fun onCreate(savedInstanceState: Bundle?) {
+                super.onCreate(savedInstanceState)
+                val webView = WebView(this).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    webViewClient = WebViewClient()
+                    loadUrl("file:///android_asset/www/index.html")
+                }
                 setContentView(webView)
             }
         }
