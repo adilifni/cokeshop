@@ -21,30 +21,39 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Build Web App / Package Files
+    - name: Prepare Web Assets
       run: |
         mkdir -p app/src/main/assets/www
         cp -r * app/src/main/assets/www/ 2>/dev/null || true
         rm -rf app/src/main/assets/www/.github app/src/main/assets/www/app
 
-    - name: Build APK Directly with Gradle
+    - name: Generate Project Files & Build APK
       run: |
         cat << 'EOF' > settings.gradle
-        dependencyResolutionManagement {
-            repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+        rootProject.name = "Cokeshop"
+        include ':app'
+        EOF
+
+        cat << 'EOF' > build.gradle
+        buildscript {
+            repositories {
+                google()
+                mavenCentral()
+            }
+            dependencies {
+                classpath 'com.android.tools.build:gradle:7.4.2'
+            }
+        }
+        allprojects {
             repositories {
                 google()
                 mavenCentral()
             }
         }
-        rootProject.name = "Cokeshop"
-        include ':app'
         EOF
 
         cat << 'EOF' > app/build.gradle
-        plugins {
-            id 'com.android.application' version '7.4.2'
-        }
+        apply plugin: 'com.android.application'
 
         android {
             namespace 'com.example.cokeshop'
