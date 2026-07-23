@@ -27,7 +27,7 @@ jobs:
         cp -r * app/src/main/assets/www/ 2>/dev/null || true
         rm -rf app/src/main/assets/www/.github app/src/main/assets/www/app
 
-    - name: Generate Project Files & Build APK
+    - name: Generate Project & Build APK
       run: |
         cat << 'EOF' > settings.gradle
         pluginManagement {
@@ -112,7 +112,14 @@ jobs:
         EOF
 
         yes | sdkmanager --licenses || true
-        gradle -Dorg.gradle.daemon=false assembleDebug
+        
+        # استخدام أداة توريد نسخة Gradle ثابتة وتوليد الملفات التشغيلية محلياً
+        mvn_gradle_version="7.5.1"
+        wget -q https://services.gradle.org/distributions/gradle-${mvn_gradle_version}-bin.zip
+        unzip -q gradle-${mvn_gradle_version}-bin.zip
+        export PATH=$PWD/gradle-${mvn_gradle_version}/bin:$PATH
+        
+        gradle assembleDebug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
