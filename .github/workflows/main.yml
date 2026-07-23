@@ -13,7 +13,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: android-actions/setup-java@v3
       with:
         distribution: 'temurin'
         java-version: '17'
@@ -30,12 +30,28 @@ jobs:
     - name: Build APK Directly with Gradle
       run: |
         cat << 'EOF' > settings.gradle
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+        dependencyResolutionManagement {
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
         rootProject.name = "Cokeshop"
         include ':app'
         EOF
 
         cat << 'EOF' > app/build.gradle
-        apply plugin: 'com.android.application'
+        plugins {
+            id 'com.android.application' version '7.4.2'
+        }
 
         android {
             namespace 'com.example.cokeshop'
@@ -97,7 +113,7 @@ jobs:
 
         yes | sdkmanager --licenses || true
         gradle wrapper
-        ./gradlew assembleDebug --offline
+        ./gradlew assembleDebug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
